@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Sign Up</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), url('https://img.freepik.com/free-vector/realistic-american-football-stadium_52683-53728.jpg?t=st=1734553324~exp=1734556924~hmac=d5ad6d5c6911398359f27f77448f1d1bd5756bf7d8f051ab70f19df3620a551b&w=996') no-repeat center center/cover;
+            color: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .link {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="signUpContainer">
+    <h2>Sign Up</h2>
+    <form id="signUpForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="role">
+            <option value="athlete">Athlete</option>
+            <option value="coach">Coach</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Sign Up</button>
+    </form>
+    <div class="link">
+        <a href="#" onclick="showLogin()">Already have an account? Log in</a>
+    </div>
+</div>
+
+<div class="container" id="loginContainer" style="display:none;">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <div class="link">
+        <a href="#" onclick="showSignUp()">Don't have an account? Sign up</a>
+    </div>
+</div>
+
+<script>
+    const signUpContainer = document.getElementById("signUpContainer");
+    const loginContainer = document.getElementById("loginContainer");
+
+    function showLogin() {
+        signUpContainer.style.display = "none";
+        loginContainer.style.display = "block";
+    }
+
+    function showSignUp() {
+        loginContainer.style.display = "none";
+        signUpContainer.style.display = "block";
+    }
+
+    document.getElementById("signUpForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value;
+
+        const response = await fetch("http://localhost:8080/api/auth/signup", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, email, password, role }),
+        });
+        if (response.ok) {
+            alert("Sign up successful!");
+        } else {
+            alert("Sign up failed!");
+        }
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        const response = await fetch("http://localhost:8080/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+            const data = await response.json(); // Assuming the response includes user info including role
+            const role = data.role; // Adjust this based on your backend response
+            localStorage.setItem('userId', data.userId);
+            localStorage.setItem('athleteId', data.userId);
+            localStorage.setItem('authToken', data.token);
+            if (role === "admin") {
+                window.location.href = "AdminUI/Admin.html"; // Redirect to admin dashboard
+            } else if (role === "coach") {
+                window.location.href = "CoachUI copy/home.html"; // Redirect to coach dashboard
+            } else if (role === "athlete") {
+                window.location.href = "sportsPage/Dashboard.html"; // Redirect to athlete dashboard
+            } else {
+                alert("Invalid role!");
+            }
+        } else {
+            alert("Login failed!");
+        }
+    });
+</script>
+</body>
+</html>
